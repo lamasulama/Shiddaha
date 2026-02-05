@@ -7,6 +7,7 @@ extension Color {
 
     // MARK: - Borders
     static let borderBrown = Color(hex: "7D3B22")
+    static let buttonborder = Color(hex: "FFF7E0")
 
     // MARK: - Text
     static let primaryText = Color.black

@@ -23,7 +23,7 @@ struct ContentView: View {
 
     // MARK: - Choose Character Screen
     private var chooseCharacterScreen: some View {
-        VStack(spacing: 60) {
+        VStack(spacing: 34) {
 
             Spacer().frame(height: 100)
 
@@ -98,7 +98,7 @@ struct ContentView: View {
                 } label: {
                     Text("save")
                         .font(.custom("PressStart2P-Regular", size: 14))
-                        .foregroundColor(Color(hex: "#DDC59F"))
+                        .foregroundColor(Color(hex: "#FFF7E0"))
                         .frame(width: 130, height: 32)
                         .background(
                             Image("save_background")

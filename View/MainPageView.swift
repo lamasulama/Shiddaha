@@ -90,12 +90,12 @@ struct MainPageView: View {
                             .interpolation(.none)
                             .scaledToFit()
 
-                        Text("get to work")
-                            .font(.custom("PressStart2P-Regular", size: 16))
-                            .foregroundColor(.white)
+                        Text("Get to work")
+                            .font(.custom("PressStart2P-Regular", size: 17))
+                            .foregroundColor(Color(hex: "#FFF7E0"))
                             .padding(.top, 2)
                     }
-                    .frame(width: 400, height: 120)
+                    .frame(width: 370, height: 120)
                 }
                 .buttonStyle(.plain)
 
