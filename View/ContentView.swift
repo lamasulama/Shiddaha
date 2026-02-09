@@ -1,31 +1,70 @@
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
 
     @StateObject private var vm = OnboardingViewModel()
     @FocusState private var nameFocused: Bool
-    @State private var goToMainPage = false
+    
+    @Environment(\.modelContext) private var modelContext
+
+    private var screenTransition: AnyTransition {
+        .asymmetric(
+            insertion: .scale(scale: 0.95).combined(with: .opacity),
+            removal: .opacity
+        )
+    }
 
     var body: some View {
         ZStack {
             Color.appBackground.ignoresSafeArea()
 
-            if vm.isNaming {
-                namingScreen
-            } else {
-                chooseCharacterScreen
+            ZStack {
+                switch vm.screen {
+                case .choose:
+                    chooseCharacterScreen
+                        .transition(screenTransition)
+
+                case .naming:
+                    namingScreen
+                        .transition(screenTransition)
+
+                case .main:
+                    MainPageView(vm: vm)
+                        .transition(screenTransition)
+                }
             }
+            .animation(.easeInOut(duration: 0.25), value: vm.screen)
+            
+            // 🎯 DEBUG RESET BUTTON - Only shows during development
+            #if DEBUG
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button("🔄 DEV RESET") {
+                        vm.resetAllData()
+                    }
+                    .font(.caption)
+                    .padding(8)
+                    .background(Color.red.opacity(0.8))
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                    .padding()
+                }
+            }
+            #endif
         }
-        .navigationDestination(isPresented: $goToMainPage) {
-            MainPageView(vm: vm)
+        .onAppear {
+            vm.loadUserData(context: modelContext)
         }
     }
 
     // MARK: - Choose Character Screen
     private var chooseCharacterScreen: some View {
-        VStack(spacing: 34) {
+        VStack(spacing: 24) {
 
-            Spacer().frame(height: 100)
+            Spacer().frame(height: 170)
 
             Text("choose your\ncharacter")
                 .font(.custom("PressStart2P-Regular", size: 22))
@@ -33,7 +72,7 @@ struct ContentView: View {
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
 
-            HStack(spacing: 40) {
+            HStack(spacing: 45) {
                 ForEach(vm.characters) { character in
                     Button {
                         withAnimation(.easeInOut(duration: 0.25)) {
@@ -44,7 +83,7 @@ struct ContentView: View {
                             .resizable()
                             .interpolation(.none)
                             .scaledToFit()
-                            .frame(width: 170, height: 190)
+                            .frame(width: 150, height: 190)
                     }
                     .buttonStyle(.plain)
                 }
@@ -56,7 +95,7 @@ struct ContentView: View {
 
     // MARK: - Naming Screen
     private var namingScreen: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 50) {
 
             Spacer().frame(height: 60)
 
@@ -65,10 +104,11 @@ struct ContentView: View {
                     .resizable()
                     .interpolation(.none)
                     .scaledToFit()
-                    .frame(width: 240, height: 340)
+                    .frame(width: 220, height: 320)
+                    .transition(.scale)
             }
 
-            VStack(spacing: 12) {
+            VStack(spacing: 30) {
 
                 ZStack(alignment: .leading) {
                     if vm.characterName.isEmpty {
@@ -84,6 +124,8 @@ struct ContentView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
                         .focused($nameFocused)
+                        .autocorrectionDisabled(true)
+                        .textInputAutocapitalization(.never)
                 }
                 .frame(width: 240)
                 .background(Color.white)
@@ -93,12 +135,13 @@ struct ContentView: View {
                 )
 
                 Button {
-                    vm.save()
-                    goToMainPage = true
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        vm.save()
+                    }
                 } label: {
                     Text("save")
                         .font(.custom("PressStart2P-Regular", size: 14))
-                        .foregroundColor(Color(hex: "#FFF7E0"))
+                        .foregroundColor(Color(hex: "F6E5CB"))
                         .frame(width: 130, height: 32)
                         .background(
                             Image("save_background")
@@ -113,6 +156,10 @@ struct ContentView: View {
 
             Spacer()
         }
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                nameFocused = true
+            }
+        }
     }
 }
-

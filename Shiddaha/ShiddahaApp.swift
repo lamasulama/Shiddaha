@@ -1,12 +1,12 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct ShiddahaApp: App {
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
-                ContentView()
-            }
+            ContentView()
         }
+        .modelContainer(for: [UserData.self, StudySession.self])
     }
 }

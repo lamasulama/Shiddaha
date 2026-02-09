@@ -3,15 +3,34 @@ import SwiftUI
 struct TimerPopupView: View {
     @Binding var isPresented: Bool
     @Binding var selectedMinutes: Int
+    var onTimerStart: (Int) -> Void
     
-    // Timer limits
     private let minMinutes = 5
-    private let maxMinutes = 240  // 4 hours = 240 minutes
+    private let maxMinutes = 240
     private let increment = 5
+    
+    private let popupVerticalOffset: CGFloat = -50
+    
+    private let frameWidth: CGFloat = 520
+    private let frameHeight: CGFloat = 340
+    
+    private let timeBoxWidth: CGFloat = 300
+    private let timeBoxHeight: CGFloat = 270
+    
+    private let timeToButtonSpacing: CGFloat = 130
+    
+    private let buttonWidth: CGFloat = 60
+    private let buttonHeight: CGFloat = 60
+    private let buttonSpacing: CGFloat = 90
+    
+    private let startButtonWidth: CGFloat = 280
+    private let startButtonHeight: CGFloat = 90
+    private let startButtonTopSpace: CGFloat = 30
+    
+    private let timerTopPadding: CGFloat = 50  // 🎯 PUSH TIMER DOWN (increase to push more)
     
     var body: some View {
         ZStack {
-            // Dark overlay background
             Color.black.opacity(0.6)
                 .ignoresSafeArea()
                 .onTapGesture {
@@ -21,106 +40,90 @@ struct TimerPopupView: View {
                 }
             
             VStack(spacing: 0) {
-                // Timer display box
                 ZStack {
-                    // Background frame (your asset)
-                    Image("timer_frame_bg")
-                        .resizable()
-                        .interpolation(.none)
-                        .scaledToFit()
-                        .frame(width: 480, height: 340)
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(hex: "F6E5CB"))
+                        .frame(width: timeBoxWidth, height: timeBoxHeight)
+                        .zIndex(1)
                     
-                    VStack(spacing: 20) {
-                        // Time display
-                        ZStack {
-                            // Light beige background
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(hex: "F6E5CB"))
-                                .frame(width: 380, height: 120)
-                            
-                            Text(formatTime(selectedMinutes))
-                                .font(.custom("PressStart2P-Regular", size: 48))
-                                .foregroundColor(Color.borderBrown)
-                        }
-                        .padding(.top, 40)
+                    VStack(spacing: timeToButtonSpacing) {
+                        Text(formatTime(selectedMinutes))
+                            .font(.custom("PressStart2P-Regular", size: 48))
+                            .foregroundColor(Color.borderBrown)
+                            .padding(.top, timerTopPadding)  // 🎯 TIMER PUSHED DOWN
                         
-                        // Plus and Minus buttons
-                        HStack(spacing: 20) {
-                            // Plus button
+                        HStack(spacing: buttonSpacing) {
                             Button {
                                 if selectedMinutes < maxMinutes {
                                     selectedMinutes += increment
                                 }
                             } label: {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color(hex: "F6E5CB"))
-                                        .frame(width: 140, height: 80)
-                                    
-                                    Image(systemName: "plus")
-                                        .font(.system(size: 40, weight: .bold))
-                                        .foregroundColor(Color.borderBrown)
-                                }
+                                Image("btn_plus")
+                                    .resizable()
+                                    .interpolation(.none)
+                                    .scaledToFit()
+                                    .frame(width: buttonWidth, height: buttonHeight)
                             }
                             .buttonStyle(.plain)
                             .disabled(selectedMinutes >= maxMinutes)
                             .opacity(selectedMinutes >= maxMinutes ? 0.5 : 1.0)
                             
-                            // Minus button
                             Button {
                                 if selectedMinutes > minMinutes {
                                     selectedMinutes -= increment
                                 }
                             } label: {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color(hex: "F6E5CB"))
-                                        .frame(width: 140, height: 80)
-                                    
-                                    Image(systemName: "minus")
-                                        .font(.system(size: 40, weight: .bold))
-                                        .foregroundColor(Color.borderBrown)
-                                }
+                                Image("btn_minus")
+                                    .resizable()
+                                    .interpolation(.none)
+                                    .scaledToFit()
+                                    .frame(width: buttonWidth, height: buttonHeight)
                             }
                             .buttonStyle(.plain)
                             .disabled(selectedMinutes <= minMinutes)
                             .opacity(selectedMinutes <= minMinutes ? 0.5 : 1.0)
                         }
                     }
+                    .zIndex(2)
+                    
+                    Image("timer_frame_bg")
+                        .resizable()
+                        .interpolation(.none)
+                        .scaledToFit()
+                        .frame(width: frameWidth, height: frameHeight)
+                        .allowsHitTesting(false)
+                        .zIndex(3)
                 }
                 
-                Spacer().frame(height: 40)
+                Spacer().frame(height: startButtonTopSpace)
                 
-                // Start button
                 Button {
-                    // Start timer action
+                    onTimerStart(selectedMinutes)
+                    
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         isPresented = false
                     }
-                    // TODO: Start actual timer here
                 } label: {
                     ZStack {
-                        Image("timer_start_button")
+                        Image("timer_start_btn")
                             .resizable()
                             .interpolation(.none)
                             .scaledToFit()
-                            .frame(width: 200, height: 80)
+                            .frame(width: startButtonWidth, height: startButtonHeight)
                         
                         Text("start")
-                            .font(.custom("PressStart2P-Regular", size: 18))
+                            .font(.custom("PressStart2P-Regular", size: 20))
                             .foregroundColor(.white)
                             .padding(.top, 4)
                     }
                 }
                 .buttonStyle(.plain)
             }
+            .offset(y: popupVerticalOffset)
         }
     }
     
-    // Format minutes to HH:MM
     private func formatTime(_ minutes: Int) -> String {
-        let hours = minutes / 60
-        let mins = minutes % 60
-        return String(format: "%02d:%02d", hours, mins)
+        return String(format: "%02d:00", minutes)
     }
 }
