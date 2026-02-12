@@ -31,6 +31,10 @@ struct FocusSessionView: View {
     private let buttonWidth: CGFloat = 280
     private let buttonHeight: CGFloat = 70
     
+    // 🎯 ALERT SIZING
+    private let alertWidth: CGFloat = 320
+    private let alertHeight: CGFloat = 240
+    
     // 🎯 Get sitting character based on selected character
     private var sittingCharacterImage: String {
         if vm.selectedCharacter?.imageName == "char_girl" {
@@ -126,6 +130,27 @@ struct FocusSessionView: View {
                 FallingDatesView()
                     .ignoresSafeArea()
             }
+            
+            // 🎯 CUSTOM STOP ALERT
+            if showCancelAlert {
+                Color.black.opacity(0.7)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+                
+                CustomStopAlert(
+                    onKeepGoing: {
+                        withAnimation {
+                            showCancelAlert = false
+                        }
+                    },
+                    onStop: {
+                        cancelSession()
+                    },
+                    alertWidth: alertWidth,
+                    alertHeight: alertHeight
+                )
+                .transition(.scale.combined(with: .opacity))
+            }
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
@@ -133,14 +158,6 @@ struct FocusSessionView: View {
         }
         .onDisappear {
             timer?.invalidate()
-        }
-        .alert("Stop Focus Session?", isPresented: $showCancelAlert) {
-            Button("Keep Going", role: .cancel) { }
-            Button("Stop", role: .destructive) {
-                cancelSession()
-            }
-        } message: {
-            Text("You won't earn any dates if you stop now.")
         }
     }
     
@@ -200,6 +217,71 @@ struct FocusSessionView: View {
         let mins = seconds / 60
         let secs = seconds % 60
         return String(format: "%02d:%02d", mins, secs)
+    }
+}
+
+// MARK: - Custom Stop Alert
+struct CustomStopAlert: View {
+    let onKeepGoing: () -> Void
+    let onStop: () -> Void
+    let alertWidth: CGFloat
+    let alertHeight: CGFloat
+    
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color(hex: "F6E5CB"))
+                .frame(width: alertWidth, height: alertHeight)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color(hex: "8B4513"), lineWidth: 6)
+                )
+            
+            VStack(spacing: 20) {
+                Text("STOP FOCUS\nSESSION?")
+                    .font(.custom("PressStart2P-Regular", size: 18))
+                    .foregroundColor(.black)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                
+                Text("You won't earn any\ndates if you stop now.")
+                    .font(.custom("PressStart2P-Regular", size: 12))
+                    .foregroundColor(.black.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(6)
+                
+                HStack(spacing: 15) {
+                    Button(action: onKeepGoing) {
+                        Text("KEEP GOING")
+                            .font(.custom("PressStart2P-Regular", size: 11))
+                            .foregroundColor(.white)
+                            .frame(width: 130, height: 50)
+                            .background(Color(hex: "4CAF50"))
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color(hex: "2D5A2D"), lineWidth: 3)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    
+                    Button(action: onStop) {
+                        Text("STOP")
+                            .font(.custom("PressStart2P-Regular", size: 11))
+                            .foregroundColor(.white)
+                            .frame(width: 130, height: 50)
+                            .background(Color(hex: "D32F2F"))
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color(hex: "8B0000"), lineWidth: 3)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .frame(width: alertWidth, height: alertHeight)
+        }
     }
 }
 

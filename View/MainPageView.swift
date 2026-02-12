@@ -68,7 +68,9 @@ struct MainPageView: View {
                     if let imageName = vm.selectedCharacter?.imageName {
                         TentCharacterIntroView(
                             characterImageName: imageName,
-                            characterName: (vm.characterName.isEmpty ? "player" : vm.characterName)
+                            characterName: (vm.characterName.isEmpty ? "player" : vm.characterName),
+                            selectedTentImage: vm.selectedTentImageName,
+                            showBubbleOnTap: true
                         )
                     }
 
@@ -130,44 +132,28 @@ struct MenuPopupView: View {
     @ObservedObject var vm: OnboardingViewModel
     
     private let topRowSpacing: CGFloat = 5
-    private let verticalSpacing: CGFloat = 0
     private let offsetFromRight: CGFloat = 60
     private let offsetFromTop: CGFloat = 10
 
     var body: some View {
-        VStack(spacing: verticalSpacing) {
-            HStack(spacing: topRowSpacing) {
-                NavigationLink {
-                    WeeklyProgressView(vm: vm)
-                } label: {
-                    Image("btn_clock")
-                        .resizable()
-                        .interpolation(.none)
-                        .scaledToFit()
-                        .frame(width: 52, height: 52)
-                }
-                .simultaneousGesture(TapGesture().onEnded {
-                    showMenu = false
-                })
-
-                NavigationLink {
-                    ShopView()
-                } label: {
-                    Image("btn_shop")
-                        .resizable()
-                        .interpolation(.none)
-                        .scaledToFit()
-                        .frame(width: 50, height: 50)
-                }
-                .simultaneousGesture(TapGesture().onEnded {
-                    showMenu = false
-                })
+        HStack(spacing: topRowSpacing) {
+            NavigationLink {
+                WeeklyProgressView(vm: vm)
+            } label: {
+                Image("btn_clock")
+                    .resizable()
+                    .interpolation(.none)
+                    .scaledToFit()
+                    .frame(width: 52, height: 52)
             }
+            .simultaneousGesture(TapGesture().onEnded {
+                showMenu = false
+            })
 
             NavigationLink {
-                SettingsView()
+                ShopView(vm: vm)
             } label: {
-                Image("btn_settings")
+                Image("btn_shop")
                     .resizable()
                     .interpolation(.none)
                     .scaledToFit()
@@ -186,16 +172,20 @@ struct MenuPopupView: View {
 struct TentCharacterIntroView: View {
     let characterImageName: String
     let characterName: String
+    let selectedTentImage: String
+    var showBubbleOnTap: Bool = false
 
     @State private var characterScale: CGFloat = 0.6
     @State private var characterOpacity: Double = 0.3
     @State private var showBlink = false
     @State private var showBubble = false
+    @State private var bubbleTimer: Timer?
+    @State private var hasShownIntro = false
 
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                Image("tent")
+                Image(selectedTentImage)
                     .resizable()
                     .interpolation(.none)
                     .scaledToFit()
@@ -219,6 +209,11 @@ struct TentCharacterIntroView: View {
                                 .scaleEffect(characterScale)
                         }
                     }
+                    .onTapGesture {
+                        if showBubbleOnTap && hasShownIntro {
+                            showBubbleWithTimer()
+                        }
+                    }
 
                     Text(characterName)
                         .font(.custom("PressStart2P-Regular", size: 16))
@@ -237,7 +232,29 @@ struct TentCharacterIntroView: View {
         }
         .frame(height: 500)
         .onAppear {
-            runIntro()
+            if !hasShownIntro {
+                runIntro()
+                hasShownIntro = true
+            }
+        }
+        .onDisappear {
+            bubbleTimer?.invalidate()
+        }
+    }
+
+    private func showBubbleWithTimer() {
+        bubbleTimer?.invalidate()
+        
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            showBubble = true
+        }
+        
+        blinkTwice()
+        
+        bubbleTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in
+            withAnimation(.easeOut(duration: 0.3)) {
+                showBubble = false
+            }
         }
     }
 

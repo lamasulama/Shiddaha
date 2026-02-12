@@ -19,6 +19,11 @@ final class OnboardingViewModel: ObservableObject {
     @Published var characterName: String = ""
     @Published var datesCount: Int = 0
     
+    // 🎯 NEW - Shop properties
+    @Published var selectedTentImageName: String = "tent"
+    @Published var purchasedTentIds: Set<String> = ["tent"]
+    @Published var purchasedCharacterIds: Set<String> = []
+    
     var userData: UserData?
     var modelContext: ModelContext?
 
@@ -44,6 +49,11 @@ final class OnboardingViewModel: ObservableObject {
         
         userData = newUser
         datesCount = newUser.datesCount
+        
+        // 🎯 NEW - Load shop data
+        selectedTentImageName = newUser.selectedTentImageName
+        purchasedTentIds = Set(newUser.purchasedTentIds)
+        purchasedCharacterIds = Set(newUser.purchasedCharacterIds)
         
         screen = .main
     }
@@ -76,6 +86,12 @@ final class OnboardingViewModel: ObservableObject {
             selectedCharacter = characters.first(where: { $0.imageName == existingUser.characterImageName })
             characterName = existingUser.characterName
             datesCount = existingUser.datesCount
+            
+            // 🎯 NEW - Load shop data
+            selectedTentImageName = existingUser.selectedTentImageName
+            purchasedTentIds = Set(existingUser.purchasedTentIds)
+            purchasedCharacterIds = Set(existingUser.purchasedCharacterIds)
+            
             screen = .main
         }
     }
@@ -97,6 +113,56 @@ final class OnboardingViewModel: ObservableObject {
         
         userData = nil
         datesCount = 0
+        
+        // 🎯 NEW - Reset shop data
+        selectedTentImageName = "tent"
+        purchasedTentIds = ["tent"]
+        purchasedCharacterIds = []
+        
         screen = .choose
+    }
+    
+    // 🎯 NEW - Shop methods
+    func purchaseItem(_ item: StoreItem) -> Bool {
+        guard let context = modelContext, let user = userData else { return false }
+        guard datesCount >= item.price else { return false }
+        
+        user.datesCount -= item.price
+        datesCount = user.datesCount
+        
+        switch item.category {
+        case .tents:
+            purchasedTentIds.insert(item.imageName)
+            user.purchasedTentIds = Array(purchasedTentIds)
+        case .characters:
+            purchasedCharacterIds.insert(item.imageName)
+            user.purchasedCharacterIds = Array(purchasedCharacterIds)
+        }
+        
+        try? context.save()
+        return true
+    }
+    
+    func isPurchased(_ item: StoreItem) -> Bool {
+        switch item.category {
+        case .tents:
+            return purchasedTentIds.contains(item.imageName)
+        case .characters:
+            return purchasedCharacterIds.contains(item.imageName)
+        }
+    }
+    
+    func selectTent(_ tentImageName: String) {
+        guard let context = modelContext, let user = userData else { return }
+        guard purchasedTentIds.contains(tentImageName) else { return }
+        
+        selectedTentImageName = tentImageName
+        user.selectedTentImageName = tentImageName
+        
+        try? context.save()
+    }
+    
+    func isTentSelected(_ tentImageName: String) -> Bool {
+        return selectedTentImageName == tentImageName
     }
 }
