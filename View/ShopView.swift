@@ -459,7 +459,7 @@ struct SelectConfirmAlert: View {
             
             VStack(spacing: 20) {
                 Text("SELECTED!")
-                    .font(.custom("PressStart2P-Regular", size: 18))
+                    .font(.custom("PressStart2P-Regular", size: 14))
                     .foregroundColor(Color(hex: "4CAF50"))
                 
                 if let item = item {
@@ -523,11 +523,11 @@ struct InsufficientFundsAlert: View {
                                 .font(.custom("PressStart2P-Regular", size: 10))
                                 .foregroundColor(.black.opacity(0.7))
                             Text("\(currentDates)")
-                                .font(.custom("PressStart2P-Regular", size: 14))
+                                .font(.custom("PressStart2P-Regular", size: 10))
                                 .foregroundColor(Color(hex: "D32F2F"))
                         }
                         
-                        Text("•")
+                        Text("")
                             .font(.custom("PressStart2P-Regular", size: 14))
                         
                         VStack {
