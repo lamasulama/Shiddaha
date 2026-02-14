@@ -182,24 +182,26 @@ struct WeeklyProgressView: View {
 
                 Spacer().frame(height: totalTopGap)
 
-                // MARK: - TOTAL TEXT (FIXED VERSION)
-                VStack(spacing: 6) {
-                    HStack(spacing: 6) {
-                        Text("You have accumulated Total of")
-                            .font(.custom("PressStart2P-Regular", size: totalFontSize))
-                            .foregroundColor(.black)
-                        
+                // ✅ TOTAL TEXT (ONE LINE, SAME FONT SIZE, ONLY HOURS GREEN)
+                Text("You have accumulated Total of \(weeklyTotalHours) Hours This week!!")
+                    .font(.custom("PressStart2P-Regular", size: totalFontSize))
+                    .foregroundColor(.black)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
+                    .overlay(
+                        // draw the green number on top, same size, same position
                         Text("\(weeklyTotalHours)")
-                            .font(.custom("PressStart2P-Regular", size: totalFontSize + 8))
+                            .font(.custom("PressStart2P-Regular", size: totalFontSize))
                             .foregroundColor(todayGreen)
-                    }
-                    
-                    Text("Hours This week!!")
-                        .font(.custom("PressStart2P-Regular", size: totalFontSize))
-                        .foregroundColor(.black)
-                }
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 20)
+                            .padding(.horizontal, 20)
+                            .opacity(1)
+                            .mask(
+                                // mask so ONLY the number is visible
+                                Text("You have accumulated Total of \(weeklyTotalHours) Hours This week!!")
+                                    .font(.custom("PressStart2P-Regular", size: totalFontSize))
+                                    .foregroundColor(.black)
+                            )
+                    )
 
                 Spacer()
             }

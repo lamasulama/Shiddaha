@@ -67,7 +67,8 @@ struct MainPageView: View {
                     Spacer()
 
                     // Character + Tent
-                    if let imageName = vm.selectedCharacter?.imageName {
+                    // ✅ FIX: use SwiftData saved characterImageName instead of selectedCharacter (which can be nil)
+                    if let imageName = vm.userData?.characterImageName, !imageName.isEmpty {
                         TentCharacterIntroView(
                             characterImageName: imageName,
                             characterName: (vm.characterName.isEmpty ? "player" : vm.characterName),

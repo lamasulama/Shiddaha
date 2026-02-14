@@ -19,11 +19,11 @@ final class OnboardingViewModel: ObservableObject {
     @Published var characterName: String = ""
     @Published var datesCount: Int = 0
     
-    // 🎯 NEW - Shop properties
+    // Shop properties
     @Published var selectedTentImageName: String = "tent"
     @Published var purchasedTentIds: Set<String> = ["tent"]
-    @Published var purchasedCharacterIds: Set<String> = ["char_boy", "char_girl"]  // 🎯 Both characters owned by default
-    
+    @Published var purchasedCharacterIds: Set<String> = ["char_boy", "char_girl"]
+
     var userData: UserData?
     var modelContext: ModelContext?
 
@@ -50,7 +50,6 @@ final class OnboardingViewModel: ObservableObject {
         userData = newUser
         datesCount = newUser.datesCount
         
-        // 🎯 NEW - Load shop data
         selectedTentImageName = newUser.selectedTentImageName
         purchasedTentIds = Set(newUser.purchasedTentIds)
         purchasedCharacterIds = Set(newUser.purchasedCharacterIds)
@@ -83,11 +82,13 @@ final class OnboardingViewModel: ObservableObject {
         let descriptor = FetchDescriptor<UserData>()
         if let existingUser = try? context.fetch(descriptor).first {
             userData = existingUser
-            selectedCharacter = characters.first(where: { $0.imageName == existingUser.characterImageName })
+            
+            // 🔥 مهم: نخلي أي شخصية محفوظة تظهر حتى لو مو ضمن الـ characters array
+            selectedCharacter = AppCharacter(imageName: existingUser.characterImageName)
+            
             characterName = existingUser.characterName
             datesCount = existingUser.datesCount
             
-            // 🎯 NEW - Load shop data
             selectedTentImageName = existingUser.selectedTentImageName
             purchasedTentIds = Set(existingUser.purchasedTentIds)
             purchasedCharacterIds = Set(existingUser.purchasedCharacterIds)
@@ -114,7 +115,6 @@ final class OnboardingViewModel: ObservableObject {
         userData = nil
         datesCount = 0
         
-        // 🎯 NEW - Reset shop data (both characters remain owned)
         selectedTentImageName = "tent"
         purchasedTentIds = ["tent"]
         purchasedCharacterIds = ["char_boy", "char_girl"]
@@ -122,7 +122,8 @@ final class OnboardingViewModel: ObservableObject {
         screen = .choose
     }
     
-    // 🎯 NEW - Shop methods
+    // MARK: - Shop
+
     func purchaseItem(_ item: StoreItem) -> Bool {
         guard let context = modelContext, let user = userData else { return false }
         guard datesCount >= item.price else { return false }
@@ -163,21 +164,22 @@ final class OnboardingViewModel: ObservableObject {
     }
     
     func isTentSelected(_ tentImageName: String) -> Bool {
-        return selectedTentImageName == tentImageName
+        selectedTentImageName == tentImageName
     }
     
     func selectCharacter(_ characterImageName: String) {
         guard let context = modelContext, let user = userData else { return }
         guard purchasedCharacterIds.contains(characterImageName) else { return }
         
-        // Update the selected character
-        selectedCharacter = characters.first(where: { $0.imageName == characterImageName })
+        // 🔥 هذا أهم تعديل
+        selectedCharacter = AppCharacter(imageName: characterImageName)
         user.characterImageName = characterImageName
         
         try? context.save()
     }
     
     func isCharacterSelected(_ characterImageName: String) -> Bool {
-        return selectedCharacter?.imageName == characterImageName
+        // نخلي المصدر الحقيقي هو المحفوظ في SwiftData
+        return userData?.characterImageName == characterImageName
     }
 }
