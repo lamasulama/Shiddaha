@@ -7,6 +7,7 @@ struct ContentView: View {
     @FocusState private var nameFocused: Bool
     
     @Environment(\.modelContext) private var modelContext
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     private var screenTransition: AnyTransition {
         .asymmetric(
@@ -17,7 +18,7 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            Color.appBackground.ignoresSafeArea()
+            AppBackgroundView()
 
             ZStack {
                 switch vm.screen {
@@ -44,6 +45,7 @@ struct ContentView: View {
                     Spacer()
                     Button("🔄 DEV RESET") {
                         vm.resetAllData()
+                        hasCompletedOnboarding = false
                     }
                     .font(.caption)
                     .padding(8)
@@ -57,6 +59,11 @@ struct ContentView: View {
         }
         .onAppear {
             vm.loadUserData(context: modelContext)
+        }
+        .onChange(of: vm.screen) { oldValue, newValue in
+            if newValue == .main {
+                hasCompletedOnboarding = true
+            }
         }
     }
 

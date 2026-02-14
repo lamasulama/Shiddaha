@@ -1,9 +1,4 @@
-//
-//  UserData.swift
-//  Shiddaha
-//
-//  Created by lama bin slmah on 08/02/2026.
-//
+// UserData.swift
 
 import Foundation
 import SwiftData
@@ -15,22 +10,29 @@ final class UserData {
     var datesCount: Int
     var totalMinutesStudied: Int
     var createdAt: Date
-    
-    // 🎯 NEW - Shop properties
+
+    // Shop
     var selectedTentImageName: String
     var purchasedTentIds: [String]
     var purchasedCharacterIds: [String]
-    
-    init(characterImageName: String, characterName: String, datesCount: Int = 0, totalMinutesStudied: Int = 0) {
+
+    init(
+        characterImageName: String,
+        characterName: String,
+        datesCount: Int = 0,
+        totalMinutesStudied: Int = 0
+    ) {
         self.characterImageName = characterImageName
         self.characterName = characterName
         self.datesCount = datesCount
         self.totalMinutesStudied = totalMinutesStudied
         self.createdAt = Date()
-        
-        // 🎯 NEW - Initialize shop properties
+
+        // Default tent owned
         self.selectedTentImageName = "tent"
-        self.purchasedTentIds = ["tent"] // Start with default tent
-        self.purchasedCharacterIds = []
+        self.purchasedTentIds = ["tent"]
+
+        // ✅ Default characters owned
+        self.purchasedCharacterIds = ["char_boy", "char_girl"]
     }
 }

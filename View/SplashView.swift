@@ -8,15 +8,14 @@ struct SplashView: View {
     @State private var showPalm = false
     @State private var showTitle = false
     @State private var showDate = false
-    @State private var showButton = false
 
     @State private var dateOffset: CGFloat = -260
 
     var body: some View {
         ZStack {
 
-            // الخلفية (استخدمي AppColors لو عندك، أو خليها Hex)
-            Color.appBackground.ignoresSafeArea()
+            // الخلفية
+            AppBackgroundView()
 
             VStack(spacing: 0) {
 
@@ -52,22 +51,6 @@ struct SplashView: View {
                         .animation(.easeIn(duration: 1.2), value: dateOffset)
                 }
 
-                Spacer().frame(height: 80)
-
-                // ✅ زر Enter الحقيقي (مو صورة بس)
-                Button {
-                    onFinish()
-                } label: {
-                    Image("EnterButton")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 320)
-                }
-                .buttonStyle(.plain)
-                .opacity(showButton ? 1 : 0)
-                .animation(.easeOut(duration: 0.4), value: showButton)
-                .disabled(!showButton)
-
                 Spacer()
             }
         }
@@ -83,7 +66,11 @@ struct SplashView: View {
             showDate = true
             dateOffset = 0
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) { showButton = true }
+        
+        // 🎯 AUTO-DISMISS after 3 seconds total
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            onFinish()
+        }
     }
 }
 

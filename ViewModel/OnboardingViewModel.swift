@@ -22,7 +22,7 @@ final class OnboardingViewModel: ObservableObject {
     // 🎯 NEW - Shop properties
     @Published var selectedTentImageName: String = "tent"
     @Published var purchasedTentIds: Set<String> = ["tent"]
-    @Published var purchasedCharacterIds: Set<String> = []
+    @Published var purchasedCharacterIds: Set<String> = ["char_boy", "char_girl"]  // 🎯 Both characters owned by default
     
     var userData: UserData?
     var modelContext: ModelContext?
@@ -114,10 +114,10 @@ final class OnboardingViewModel: ObservableObject {
         userData = nil
         datesCount = 0
         
-        // 🎯 NEW - Reset shop data
+        // 🎯 NEW - Reset shop data (both characters remain owned)
         selectedTentImageName = "tent"
         purchasedTentIds = ["tent"]
-        purchasedCharacterIds = []
+        purchasedCharacterIds = ["char_boy", "char_girl"]
         
         screen = .choose
     }
@@ -164,5 +164,20 @@ final class OnboardingViewModel: ObservableObject {
     
     func isTentSelected(_ tentImageName: String) -> Bool {
         return selectedTentImageName == tentImageName
+    }
+    
+    func selectCharacter(_ characterImageName: String) {
+        guard let context = modelContext, let user = userData else { return }
+        guard purchasedCharacterIds.contains(characterImageName) else { return }
+        
+        // Update the selected character
+        selectedCharacter = characters.first(where: { $0.imageName == characterImageName })
+        user.characterImageName = characterImageName
+        
+        try? context.save()
+    }
+    
+    func isCharacterSelected(_ characterImageName: String) -> Bool {
+        return selectedCharacter?.imageName == characterImageName
     }
 }

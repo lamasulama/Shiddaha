@@ -1,9 +1,10 @@
 //
-//  ShopView.swift
+//  ShopView 2.swift
 //  Shiddaha
 //
-//  Created by AlAnoud Alsaaid on 22/08/1447 AH.
+//  Created by lama bin slmah on 14/02/2026.
 //
+
 
 import SwiftUI
 
@@ -14,7 +15,6 @@ struct ShopView: View {
     @State private var selectedCategory: StoreCategory = .tents
     @State private var showPurchaseConfirm = false
     @State private var showInsufficientFunds = false
-    @State private var showSelectConfirm = false
     @State private var selectedItem: StoreItem?
     
     // 🎯 ADJUSTABLE POSITIONS
@@ -36,34 +36,34 @@ struct ShopView: View {
     private let cardBorderWidth: CGFloat = 2
     private let dateTagHeight: CGFloat = 28
     private let checkmarkSize: CGFloat = 30
+    private let checkmarkBackgroundSize: CGFloat = 36
     
     // Alert sizing
     private let alertWidth: CGFloat = 320
     private let alertHeight: CGFloat = 240
     
-    private let backgroundColor: String = "DDC59F"
     private let brownColor = Color(red: 0.35, green: 0.22, blue: 0.14)
     
     private let items: [StoreItem] = [
         // TENTS
         StoreItem(imageName: "tent", price: 0, category: .tents),
         StoreItem(imageName: "tent2", price: 180, category: .tents),
-        StoreItem(imageName: "tent3", price: 180, category: .tents),
-        StoreItem(imageName: "tent4", price: 180, category: .tents),
-        StoreItem(imageName: "tent5", price: 180, category: .tents),
-        StoreItem(imageName: "tent6", price: 180, category: .tents),
+        StoreItem(imageName: "tent3", price: 200, category: .tents),
+        StoreItem(imageName: "tent4", price: 300, category: .tents),
+        StoreItem(imageName: "tent5", price: 400, category: .tents),
+        StoreItem(imageName: "tent6", price: 600, category: .tents),
         
         // CHARACTERS
         StoreItem(imageName: "char_boy", price: 0, category: .characters),
         StoreItem(imageName: "char_girl", price: 0, category: .characters),
-        StoreItem(imageName: "girl1", price: 180, category: .characters),
-        StoreItem(imageName: "girl2", price: 180, category: .characters),
-        StoreItem(imageName: "girl3", price: 180, category: .characters),
-        StoreItem(imageName: "girl4", price: 180, category: .characters),
-        StoreItem(imageName: "boy1", price: 180, category: .characters),
-        StoreItem(imageName: "boy2", price: 180, category: .characters),
+        StoreItem(imageName: "girl1", price: 350, category: .characters),
+        StoreItem(imageName: "girl2", price: 350, category: .characters),
+        StoreItem(imageName: "girl3", price: 600, category: .characters),
+
+        StoreItem(imageName: "boy1", price: 600, category: .characters),
+     
     ]
-    
+
     private let visibleCategories: [StoreCategory] = [.tents, .characters]
     
     private let columns = [
@@ -77,24 +77,15 @@ struct ShopView: View {
     
     var body: some View {
         ZStack {
-            Color(hex: backgroundColor)
-                .ignoresSafeArea()
+            AppBackgroundView()
             
             VStack(spacing: 12) {
                 
+                Spacer().frame(height: 50)
+                
                 // TOP BAR
                 HStack {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundStyle(.brown)
-                            .padding(10)
-                            .background(Color.white.opacity(0.6))
-                            .clipShape(Circle())
-                    }
-                    .frame(width: backButtonSize, height: backButtonSize)
+                    PixelBackButton(action: { dismiss() })
                     
                     Spacer()
                     
@@ -131,9 +122,7 @@ struct ShopView: View {
                 HStack(spacing: categoryButtonSpacing) {
                     ForEach(visibleCategories) { cat in
                         Button {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                selectedCategory = cat
-                            }
+                            selectedCategory = cat
                         } label: {
                             Image(cat.iconAssetName)
                                 .resizable()
@@ -141,10 +130,6 @@ struct ShopView: View {
                                 .scaledToFit()
                                 .frame(width: categoryButtonSize, height: categoryButtonSize)
                                 .padding(categoryButtonPadding)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(selectedCategory == cat ? Color.brown.opacity(categorySelectedOpacity) : .clear)
-                                )
                         }
                         .buttonStyle(.plain)
                     }
@@ -157,7 +142,7 @@ struct ShopView: View {
                             StoreItemCard(
                                 item: item,
                                 isPurchased: vm.isPurchased(item),
-                                isSelected: selectedCategory == .tents ? vm.isTentSelected(item.imageName) : false,
+                                isSelected: selectedCategory == .tents ? vm.isTentSelected(item.imageName) : vm.isCharacterSelected(item.imageName),
                                 cardCornerRadius: cardCornerRadius,
                                 cardHeight: cardHeight,
                                 cardImageHeight: cardImageHeight,
@@ -217,27 +202,11 @@ struct ShopView: View {
                 )
                 .transition(.scale.combined(with: .opacity))
             }
-            
-            // 🎯 SELECT CONFIRMATION
-            if showSelectConfirm {
-                Color.black.opacity(0.7)
-                    .ignoresSafeArea()
-                    .transition(.opacity)
-                
-                SelectConfirmAlert(
-                    item: selectedItem,
-                    onDismiss: {
-                        withAnimation {
-                            showSelectConfirm = false
-                        }
-                    },
-                    alertWidth: alertWidth,
-                    alertHeight: alertHeight - 20
-                )
-                .transition(.scale.combined(with: .opacity))
-            }
         }
         .navigationBarBackButtonHidden(true)
+        .transaction { transaction in
+            transaction.disablesAnimations = true
+        }
     }
     
     // 🎯 HANDLE ITEM TAP
@@ -245,12 +214,11 @@ struct ShopView: View {
         selectedItem = item
         
         if vm.isPurchased(item) {
-            // Already purchased - SELECT it
+            // Already purchased - SELECT it directly (no popup)
             if item.category == .tents {
                 vm.selectTent(item.imageName)
-                withAnimation {
-                    showSelectConfirm = true
-                }
+            } else if item.category == .characters {
+                vm.selectCharacter(item.imageName)
             }
         } else {
             // Not purchased - try to BUY it
@@ -275,15 +243,11 @@ struct ShopView: View {
                 showPurchaseConfirm = false
             }
             
-            // Auto-select if it's a tent
+            // Auto-select if it's a tent or character
             if item.category == .tents {
                 vm.selectTent(item.imageName)
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    withAnimation {
-                        showSelectConfirm = true
-                    }
-                }
+            } else if item.category == .characters {
+                vm.selectCharacter(item.imageName)
             }
         }
     }
@@ -326,10 +290,16 @@ struct StoreItemCard: View {
                 if isSelected {
                     VStack {
                         Spacer()
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: checkmarkSize))
-                            .foregroundColor(.green)
-                            .padding(8)
+                        ZStack {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: checkmarkSize + 4, height: checkmarkSize + 4)
+                            
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: checkmarkSize))
+                                .foregroundColor(.green)
+                        }
+                        .padding(8)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 }
@@ -358,6 +328,10 @@ struct StoreItemCard: View {
                                 .stroke(Color(red: 0.30, green: 0.18, blue: 0.10), lineWidth: 2)
                         )
                 )
+            } else {
+                // Invisible spacer to keep cards same height
+                Spacer()
+                    .frame(height: 28)
             }
         }
         .padding(cardPadding)
@@ -440,57 +414,6 @@ struct PurchaseConfirmAlert: View {
     }
 }
 
-// MARK: - SELECT CONFIRMATION ALERT
-struct SelectConfirmAlert: View {
-    let item: StoreItem?
-    let onDismiss: () -> Void
-    let alertWidth: CGFloat
-    let alertHeight: CGFloat
-    
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color(hex: "F6E5CB"))
-                .frame(width: alertWidth, height: alertHeight)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color(hex: "8B4513"), lineWidth: 6)
-                )
-            
-            VStack(spacing: 20) {
-                Text("SELECTED!")
-                    .font(.custom("PressStart2P-Regular", size: 14))
-                    .foregroundColor(Color(hex: "4CAF50"))
-                
-                if let item = item {
-                    Image(item.imageName)
-                        .resizable()
-                        .interpolation(.none)
-                        .scaledToFit()
-                        .frame(height: 80)
-                }
-                
-                Text("This item is now\nequipped!")
-                    .font(.custom("PressStart2P-Regular", size: 12))
-                    .foregroundColor(.black)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(6)
-                
-                Button(action: onDismiss) {
-                    Text("OK")
-                        .font(.custom("PressStart2P-Regular", size: 14))
-                        .foregroundColor(.white)
-                        .frame(width: 120, height: 45)
-                        .background(Color(hex: "4CAF50"))
-                        .cornerRadius(8)
-                }
-                .buttonStyle(.plain)
-            }
-            .frame(width: alertWidth, height: alertHeight)
-        }
-    }
-}
-
 // MARK: - INSUFFICIENT FUNDS ALERT
 struct InsufficientFundsAlert: View {
     let item: StoreItem?
@@ -518,7 +441,7 @@ struct InsufficientFundsAlert: View {
                 
                 if let item = item {
                     HStack(spacing: 15) {
-                        VStack {
+                        VStack(spacing: 8) {
                             Text("You have:")
                                 .font(.custom("PressStart2P-Regular", size: 10))
                                 .foregroundColor(.black.opacity(0.7))
@@ -530,7 +453,7 @@ struct InsufficientFundsAlert: View {
                         Text("")
                             .font(.custom("PressStart2P-Regular", size: 14))
                         
-                        VStack {
+                        VStack(spacing: 8) {
                             Text("You need:")
                                 .font(.custom("PressStart2P-Regular", size: 10))
                                 .foregroundColor(.black.opacity(0.7))
@@ -552,7 +475,7 @@ struct InsufficientFundsAlert: View {
                         .font(.custom("PressStart2P-Regular", size: 14))
                         .foregroundColor(.white)
                         .frame(width: 120, height: 45)
-                        .background(Color(hex: "D32F2F"))
+                        .background(Color(hex: "4CAF50"))
                         .cornerRadius(8)
                 }
                 .buttonStyle(.plain)

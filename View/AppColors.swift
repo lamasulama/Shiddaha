@@ -28,3 +28,13 @@ extension Color {
     // MARK: - Fields
     static let fieldBackground = Color.white
 }
+
+// MARK: - Background View Helper
+struct AppBackgroundView: View {
+    var body: some View {
+        Image("background_desert")
+            .resizable()
+            .scaledToFill()
+            .ignoresSafeArea()
+    }
+}

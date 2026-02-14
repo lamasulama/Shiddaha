@@ -1,274 +1,223 @@
+// WeeklyProgressView.swift
+// ✅ Updates:
+// 1) Push EVERYTHING down (bigger top spacer)
+// 2) Vertical line stops at 6H (does NOT extend past the top tick area)
+// 3) Vertical line still reaches the baseline (so palms sit under 1H correctly)
+
 import SwiftUI
 import SwiftData
 
 struct WeeklyProgressView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var vm: OnboardingViewModel
-
     @Query private var sessions: [StudySession]
 
-    // 🎯 ============================================================
-    // MARK: - ALL ADJUSTABLE POSITIONS (EVERY SINGLE OBJECT)
-    // 🎯 ============================================================
-    
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // TITLE ("Weekly Focus Progress")
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private let titleTop: CGFloat = 60                    // Space from top (adjusted since no back button)
-    private let titleSize: CGFloat = 18                   // Font size
+    // MARK: - DESIGN CONSTANTS
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // CHART CONTAINER (entire chart area)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private let chartTop: CGFloat = 30                    // Space below title
-    private let chartSidePadding: CGFloat = 1             // Left/right padding (decrease to shift left)
-    private let chartHeightPercent: CGFloat = 0.45        // Chart height as % of screen (0.45 = 45%)
-    private let chartMaxHeight: CGFloat = 430             // Maximum chart height
+    private let backgroundAssetName = "weekly_progress_bg"
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // Y-AXIS (brown vertical line on left with hour labels)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private let axisWidth: CGFloat = 56                   // Total width of Y-axis area
-    private let axisLineWidth: CGFloat = 10               // Brown vertical line thickness
-    private let axisLineOffsetX: CGFloat = -2             // Shift brown line left/right
-    private let axisFont: CGFloat = 11                    // Hour label font size (1H, 2H, etc.)
-    private let axisLabelOpacity: Double = 0.55           // Hour label transparency
-    private let axisLabelToTickGap: CGFloat = 6           // Space between label and tick
-    
-    // Y-axis ticks (small horizontal lines)
-    private let tickW: CGFloat = 10                       // Tick width (length)
-    private let tickH: CGFloat = 4                        // Tick height (thickness)
+    // ✅ Push whole screen down
+    private let screenTopPush: CGFloat = 125
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // BASELINE (brown horizontal line at bottom of chart)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private let baselineH: CGFloat = 10                   // Thickness of horizontal baseline
-    private let baselineYAxisWidth: CGFloat = -2          // Width adjustment for baseline under Y-axis
+    // Back button positioning
+    private let backTopPadding: CGFloat = -70
+    private let backLeadingPadding: CGFloat = 22
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // PALM TREES (7 trees for each day)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private let palmWidth: CGFloat = 45                   // Width of each palm tree
-    private let palmSpacing: CGFloat = 6                  // Space between palm trees
-    private let palmToAxisGap: CGFloat = -6               // Gap between axis and first palm (negative = closer)
-    private let palmMinHeight: CGFloat = 70               // Minimum palm height (0 hours)
-    private let palmMaxHeightPercent: CGFloat = 0.92      // Max palm as % of chart height (6+ hours)
-    private let palmVerticalOffset: CGFloat = 17          // 🎯 Push palms down (increase to move more down)
+    // Title
+    private let titleTopGap: CGFloat = 50
+    private let titleFontSize: CGFloat = 20
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // DAY LABELS (Sun, Mon, Tue, etc. below palms)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private let dayFont: CGFloat = 8                      // Font size of day names
-    private let dayTopGap: CGFloat = 8                    // Space above day labels (from baseline)
-    private let dayNormalOpacity: Double = 0.55           // Opacity for non-today days
-    private let dayLabelLeftAdjust: CGFloat = -2          // Fine-tune day label alignment
+    // Chart
+    private let chartTopGap: CGFloat = 38
+    private let chartHeight: CGFloat = 220
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // TOTAL TEXT ("You have accumulated Total of X Hours...")
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private let totalTop: CGFloat = 30                    // Space above total text (from day labels)
-    private let totalFont: CGFloat = 12                  // Font size for regular tex
-    private let totalNumberBump: CGFloat = 8             // Extra size for the number (e.g., "36")
-    private let totalHorizontalPadding: CGFloat = 22      // Left/right padding
-    private let totalTextSpacing: CGFloat = 6             // Space between text segments
+    // Axis
+    private let axisWidth: CGFloat = 60
+    private let axisLineWidth: CGFloat = 8
+    private let axisColor = Color(hex: "8B4513")
+    private let axisFontSize: CGFloat = 11
+    private let tickWidth: CGFloat = 10
+    private let tickHeight: CGFloat = 3
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // DONE BUTTON (bottom button)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private let doneTop: CGFloat = 150                     // Space above button (from total text)
-    private let doneW: CGFloat = 150                      // Button width
-    private let doneH: CGFloat = 50                       // Button height
-    private let doneFont: CGFloat = 14                    // "Done" text font size
-    private let doneCorner: CGFloat = 10                  // Button corner radius
-    private let doneBorder: CGFloat = 3                   // Button border thickness
-    private let doneTextOpacity: Double = 0.85            // "Done" text transparency
+    // Baseline
+    private let baselineHeight: CGFloat = 8
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // COLORS (all colors used in the view)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private let brown = Color(hex: "8B4513")              // Y-axis line & baseline
-    private let brownDark = Color(hex: "6B3A2A")          // Done button border
-    private let backBrown = Color(hex: "A0624A")          // Done button background
-    private let green = Color(hex: "4CAF50")              // Today's day & total number
+    // ✅ Vertical line tuning
+    private let axisTopTrim: CGFloat = 5 // makes vertical line NOT "linger" above 6H
 
-    // 🎯 ============================================================
-    // END OF ADJUSTABLE POSITIONS
-    // 🎯 ============================================================
+    // Palms
+    private let palmWidth: CGFloat = 38
+    private let palmSpacing: CGFloat = 10
+    private let palmMinHeight: CGFloat = 55
+    private let palmMaxHeightPercent: CGFloat = 0.92
+
+    // Day labels
+    private let dayFontSize: CGFloat = 9
+    private let dayTopGap: CGFloat = 4
+    private let dayNormalOpacity: Double = 0.6
+    private let todayGreen = Color(hex: "4CAF50")
+
+    // Total text
+    private let totalTopGap: CGFloat = 65
+    private let totalFontSize: CGFloat = 12
 
     var body: some View {
-        GeometryReader { geo in
-            // Chart height tuned for tall iPhone screens (responsive)
-            let chartHeight = min(geo.size.height * chartHeightPercent, chartMaxHeight)
+        ZStack {
+            Image(backgroundAssetName)
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
 
-            ZStack {
-                Color.appBackground.ignoresSafeArea()
+            VStack(spacing: 0) {
 
-                VStack(spacing: 0) {
+                // ✅ Push everything down
+                Spacer().frame(height: screenTopPush)
 
-                    Spacer().frame(height: titleTop)
-
-                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                    // TITLE
-                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                    Text("Weekly Focus Progress")
-                        .font(.custom("PressStart2P-Regular", size: titleSize))
-                        .foregroundColor(.black)
-                        .multilineTextAlignment(.center)
-
-                    Spacer().frame(height: chartTop)
-
-                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                    // CHART (Y-axis + Palms + Baseline + Day labels)
-                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                    VStack(spacing: 0) {
-
-                        HStack(alignment: .bottom, spacing: 0) {
-
-                            // Y-AXIS (vertical line + ticks + labels)
-                            ZStack(alignment: .trailing) {
-                                Rectangle()
-                                    .fill(brown)
-                                    .frame(width: axisLineWidth, height: chartHeight)
-                                    .offset(x: axisLineOffsetX)
-
-                                VStack(alignment: .trailing, spacing: 0) {
-                                    ForEach((1...6).reversed(), id: \.self) { h in
-                                        HStack(spacing: axisLabelToTickGap) {
-                                            Text("\(h)H")
-                                                .font(.custom("PressStart2P-Regular", size: axisFont))
-                                                .foregroundColor(.black.opacity(axisLabelOpacity))
-
-                                            Rectangle()
-                                                .fill(brown)
-                                                .frame(width: tickW, height: tickH)
-                                        }
-                                        .frame(height: chartHeight / 6, alignment: .trailing)
-                                    }
-                                }
-                            }
-                            .frame(width: axisWidth)
-
-                            // PALM TREES (7 days)
-                            HStack(alignment: .bottom, spacing: palmSpacing) {
-                                ForEach(0..<7, id: \.self) { idx in
-                                    let hours = hoursForDay(idx)
-                                    let bucket = hourBucket(hours)
-                                    let img = palmImageName(bucket)
-                                    let palmH = palmHeight(bucket, chartHeight: chartHeight)
-
-                                    VStack(spacing: 0) {
-                                        Spacer().frame(height: chartHeight - palmH)
-
-                                        Image(img)
-                                            .resizable()
-                                            .interpolation(.none)
-                                            .scaledToFit()
-                                            .frame(width: palmWidth, height: palmH)
-                                    }
-                                    .frame(height: chartHeight)
-                                    .offset(y: palmVerticalOffset)  // 🎯 PUSH PALMS DOWN
-                                }
-                            }
-                            .padding(.leading, palmToAxisGap)
-                        }
-                        .padding(.horizontal, chartSidePadding)
-
-                        // BASELINE (horizontal brown line)
-                        HStack(spacing: 0) {
-                            Rectangle()
-                                .fill(brown)
-                                .frame(width: axisWidth + baselineYAxisWidth, height: baselineH)
-
-                            Rectangle()
-                                .fill(brown)
-                                .frame(height: baselineH)
-                        }
-                        .padding(.horizontal, chartSidePadding)
-
-                        // DAY LABELS (Sun, Mon, Tue, etc.)
-                        HStack(spacing: 0) {
-                            Spacer().frame(width: axisWidth + chartSidePadding + dayLabelLeftAdjust)
-
-                            HStack(spacing: palmSpacing) {
-                                ForEach(0..<7, id: \.self) { idx in
-                                    Text(dayName(idx))
-                                        .font(.custom("PressStart2P-Regular", size: dayFont))
-                                        .foregroundColor(isToday(idx) ? green : .black.opacity(dayNormalOpacity))
-                                        .frame(width: palmWidth)
-                                }
-                            }
-                            .padding(.leading, palmToAxisGap)
-
-                            Spacer().frame(width: chartSidePadding)
-                        }
-                        .padding(.top, dayTopGap)
-                    }
-
-                    Spacer().frame(height: totalTop)
-
-                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                    // TOTAL TEXT
-                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                    HStack(spacing: totalTextSpacing) {
-                        Text("You have accumulated Total of")
-                            .font(.custom("PressStart2P-Regular", size: totalFont))
-                            .foregroundColor(.black)
-
-                        Text("\(weeklyTotalHours)")
-                            .font(.custom("PressStart2P-Regular", size: totalFont + totalNumberBump))
-                            .foregroundColor(green)
-
-                        Text("Hours This week!!")
-                            .font(.custom("PressStart2P-Regular", size: totalFont))
-                            .foregroundColor(.black)
-                    }
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, totalHorizontalPadding)
-
-                    Spacer().frame(height: doneTop)
-
-                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                    // DONE BUTTON
-                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                    Button { dismiss() } label: {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: doneCorner)
-                                .fill(backBrown)
-                                .frame(width: doneW, height: doneH)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: doneCorner)
-                                        .stroke(brownDark, lineWidth: doneBorder)
-                                )
-
-                            Text("Done")
-                                .font(.custom("PressStart2P-Regular", size: doneFont))
-                                .foregroundColor(.black.opacity(doneTextOpacity))
-                        }
-                    }
-                    .buttonStyle(.plain)
-
+                // Back Button
+                HStack {
+                    PixelBackButton(action: { dismiss() })
                     Spacer()
                 }
+                .padding(.top, backTopPadding)
+                .padding(.leading, backLeadingPadding)
+
+                Spacer().frame(height: titleTopGap)
+
+                // Title (Centered)
+                Text("Weekly Focus Progress")
+                    .font(.custom("PressStart2P-Regular", size: titleFontSize))
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .multilineTextAlignment(.center)
+
+                Spacer().frame(height: chartTopGap)
+
+                // MARK: - CHART BLOCK
+                VStack(spacing: 0) {
+
+                    HStack(alignment: .bottom, spacing: 0) {
+
+                        // ✅ Y Axis (stops at top of ticks, reaches baseline)
+                        ZStack(alignment: .trailing) {
+
+                            // Total axis area height = chartHeight + baselineHeight
+                            // But the visible vertical line is slightly shorter on top (axisTopTrim)
+                            Rectangle()
+                                .fill(axisColor)
+                                .frame(
+                                    width: axisLineWidth,
+                                    height: (chartHeight + baselineHeight) - axisTopTrim
+                                )
+                                .frame(height: chartHeight + baselineHeight, alignment: .bottom) // anchor to baseline
+
+                            // Tick labels aligned to chart area only (above baseline)
+                            VStack(spacing: 0) {
+                                ForEach((1...6).reversed(), id: \.self) { h in
+                                    HStack(spacing: 6) {
+                                        Text("\(h)H")
+                                            .font(.custom("PressStart2P-Regular", size: axisFontSize))
+                                            .foregroundColor(.black.opacity(0.6))
+
+                                        Rectangle()
+                                            .fill(axisColor)
+                                            .frame(width: tickWidth, height: tickHeight)
+                                    }
+                                    .frame(height: chartHeight / 6, alignment: .trailing)
+                                }
+                            }
+                            .padding(.trailing, 6)
+                            .padding(.bottom, baselineHeight)
+                        }
+                        .frame(width: axisWidth)
+                        .frame(height: chartHeight + baselineHeight, alignment: .bottom)
+
+                        // Palms
+                        HStack(alignment: .bottom, spacing: palmSpacing) {
+                            ForEach(0..<7, id: \.self) { idx in
+                                let bucket = hourBucket(hoursForDay(idx))
+                                let height = palmHeight(bucket)
+
+                                VStack(spacing: 0) {
+                                    Spacer(minLength: 0)
+                                    Image("palm_\(bucket)h")
+                                        .resizable()
+                                        .interpolation(.none)
+                                        .scaledToFit()
+                                        .frame(width: palmWidth, height: height, alignment: .bottom)
+                                }
+                                .frame(width: palmWidth, height: chartHeight, alignment: .bottom)
+                            }
+                        }
+                        .frame(height: chartHeight, alignment: .bottom)
+                    }
+
+                    // Baseline
+                    HStack(spacing: 0) {
+                        Rectangle()
+                            .fill(axisColor)
+                            .frame(width: axisWidth - 4, height: baselineHeight)
+
+                        Rectangle()
+                            .fill(axisColor)
+                            .frame(height: baselineHeight)
+                    }
+
+                    // Day Labels
+                    HStack(spacing: 0) {
+                        Spacer().frame(width: axisWidth)
+
+                        HStack(spacing: palmSpacing) {
+                            ForEach(0..<7, id: \.self) { idx in
+                                Text(dayName(idx))
+                                    .font(.custom("PressStart2P-Regular", size: dayFontSize))
+                                    .foregroundColor(isToday(idx) ? todayGreen : .black.opacity(dayNormalOpacity))
+                                    .frame(width: palmWidth)
+                            }
+                        }
+
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.top, dayTopGap)
+                }
+
+                Spacer().frame(height: totalTopGap)
+
+                // MARK: - TOTAL TEXT (FIXED VERSION)
+                VStack(spacing: 6) {
+                    HStack(spacing: 6) {
+                        Text("You have accumulated Total of")
+                            .font(.custom("PressStart2P-Regular", size: totalFontSize))
+                            .foregroundColor(.black)
+                        
+                        Text("\(weeklyTotalHours)")
+                            .font(.custom("PressStart2P-Regular", size: totalFontSize + 8))
+                            .foregroundColor(todayGreen)
+                    }
+                    
+                    Text("Hours This week!!")
+                        .font(.custom("PressStart2P-Regular", size: totalFontSize))
+                        .foregroundColor(.black)
+                }
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
+
+                Spacer()
             }
-            .navigationBarBackButtonHidden(true)
         }
+        .navigationBarBackButtonHidden(true)
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // MARK: - Data Calculation Functions
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // MARK: - Data
 
     private var weeklyTotalHours: Int {
         let calendar = Calendar.current
         let now = Date()
         let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now))!
-
         let weekSessions = sessions.filter { $0.sessionDate >= weekStart }
         let totalMinutes = weekSessions.reduce(0) { $0 + $1.minutesStudied }
         return totalMinutes / 60
     }
 
-    /// Returns exact hours (Double) for the dayIndex inside current week (Sun=0 ... Sat=6)
     private func hoursForDay(_ dayIndex: Int) -> Double {
         let calendar = Calendar.current
         let now = Date()
@@ -283,37 +232,24 @@ struct WeeklyProgressView: View {
         return Double(totalMinutes) / 60.0
     }
 
-    /// Bucket logic: 0,1,2,3,4,5,6 (6 = 6+)
     private func hourBucket(_ hours: Double) -> Int {
-        // floor: 1.00 -> 1, 1.99 -> 1, 0.50 -> 0
         let h = Int(floor(hours))
         return min(max(h, 0), 6)
     }
 
-    private func palmImageName(_ bucket: Int) -> String {
-        // your assets: palm_0h ... palm_6h
-        return "palm_\(bucket)h"
-    }
-
-    private func palmHeight(_ bucket: Int, chartHeight: CGFloat) -> CGFloat {
-        // Make it look like your mock: 0 is tiny, 6 is tallest
-        // Tuned manually for pixel-art feel.
-        let maxH = chartHeight * palmMaxHeightPercent
-
+    private func palmHeight(_ bucket: Int) -> CGFloat {
+        let maxHeight = chartHeight * palmMaxHeightPercent
         if bucket == 0 { return palmMinHeight }
-        let t = CGFloat(bucket) / 6.0
-        return palmMinHeight + (maxH - palmMinHeight) * t
+        let ratio = CGFloat(bucket) / 6.0
+        return palmMinHeight + (maxHeight - palmMinHeight) * ratio
     }
-
-    // MARK: - Days
 
     private func dayName(_ index: Int) -> String {
         ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][index]
     }
 
-    private func isToday(_ dayIndex: Int) -> Bool {
-        // Calendar weekday: 1=Sun ... 7=Sat
+    private func isToday(_ index: Int) -> Bool {
         let today = Calendar.current.component(.weekday, from: Date())
-        return (today - 1) == dayIndex
+        return (today - 1) == index
     }
 }

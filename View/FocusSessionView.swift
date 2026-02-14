@@ -22,7 +22,7 @@ struct FocusSessionView: View {
     private let timerToCharacterSpacing: CGFloat = 100
     private let characterWidth: CGFloat = 100
     private let characterHeight: CGFloat = 130
-    private let characterOffsetX: CGFloat = -80
+    private let characterOffsetX: CGFloat = -83
     private let characterOffsetY: CGFloat = 80
     private let treeWidth: CGFloat = 200
     private let treeHeight: CGFloat = 280
@@ -297,7 +297,7 @@ struct DateFallingToHandView: View {
     // 🎯 ADJUSTABLE DATE FALLING POSITIONS - CHANGE THESE VALUES
     private let dateStartY: CGFloat = 170         // Where date starts (top of screen)
     private let dateEndY: CGFloat = 300          // Where date ends (character's hand)
-    private let dateOffsetX: CGFloat = 50           // Horizontal offset from character center
+    private let dateOffsetX: CGFloat = 55          // Horizontal offset from character center
     private let dateSize: CGFloat = 30              // Size of falling date image
     private let fallDuration: Double = 1.5          // How long it takes to fall (seconds)
     private let repeatInterval: Double = 2.0        // How often date falls (seconds)
@@ -355,7 +355,7 @@ struct FallingDatesView: View {
                         .resizable()
                         .interpolation(.none)
                         .scaledToFit()
-                        .frame(width: 40, height: 40)
+                        .frame(width: 30, height: 30)
                         .position(x: date.x, y: date.y)
                         .opacity(date.opacity)
                 }

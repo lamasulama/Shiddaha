@@ -11,9 +11,11 @@ struct MainPageView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.appBackground.ignoresSafeArea()
+                AppBackgroundView()
 
                 VStack(spacing: 0) {
+
+                    Spacer().frame(height: 50)
 
                     // TOP BAR
                     HStack(alignment: .center) {
@@ -96,7 +98,7 @@ struct MainPageView: View {
                         .frame(width: 380, height: 90)
                     }
                     .buttonStyle(.plain)
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 100)
                 }
             }
             .overlay {
