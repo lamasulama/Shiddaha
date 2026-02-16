@@ -45,24 +45,24 @@ struct ShopView: View {
     private let brownColor = Color(red: 0.35, green: 0.22, blue: 0.14)
     
     private let items: [StoreItem] = [
-        // TENTS
-        StoreItem(imageName: "tent", price: 0, category: .tents),
-        StoreItem(imageName: "tent2", price: 50, category: .tents),
-        StoreItem(imageName: "tent3", price: 100, category: .tents),
-        StoreItem(imageName: "tent4", price: 150, category: .tents),
-        StoreItem(imageName: "tent5", price: 180, category: .tents),
-        StoreItem(imageName: "tent6", price: 200, category: .tents),
-        
-        // CHARACTERS
-        StoreItem(imageName: "char_boy", price: 0, category: .characters),
-        StoreItem(imageName: "char_girl", price: 0, category: .characters),
-        StoreItem(imageName: "girl1", price: 100, category: .characters),
-        StoreItem(imageName: "girl2", price: 100, category: .characters),
-        StoreItem(imageName: "girl3", price: 150, category: .characters),
+            // TENTS
+            StoreItem(imageName: "tent", price: 0, category: .tents),
+            StoreItem(imageName: "tent4", price: 200, category: .tents),
+            StoreItem(imageName: "tent3", price: 300, category: .tents),
+            StoreItem(imageName: "tent2", price: 600, category: .tents),
+            StoreItem(imageName: "tent5", price: 1000, category: .tents),
+            StoreItem(imageName: "tent6", price: 1200, category: .tents),
+            
+            // CHARACTERS
+            StoreItem(imageName: "char_boy", price: 0, category: .characters),
+            StoreItem(imageName: "char_girl", price: 0, category: .characters),
+            StoreItem(imageName: "girl1", price: 600, category: .characters),
+            StoreItem(imageName: "girl2", price: 600, category: .characters),
+            StoreItem(imageName: "girl3", price: 1200, category: .characters),
 
-        StoreItem(imageName: "boy1", price: 150, category: .characters),
-     
-    ]
+            StoreItem(imageName: "boy1", price: 1200, category: .characters),
+         
+        ]
 
     private let visibleCategories: [StoreCategory] = [.tents, .characters]
     
