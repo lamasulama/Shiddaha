@@ -13,8 +13,39 @@ struct FocusSessionView: View {
     @State private var timer: Timer?
     @State private var showCancelAlert = false
     @State private var sessionCompleted = false
-    @State private var showFallingDates = false
     @State private var showDateFalling = false
+    
+    // 🎯 Date Reward System
+    private let dateCollectionInterval: Int = 300 // 5 minutes = 300 seconds
+    private let standardSessionThreshold: Int = 60 // 60 minutes
+    
+    // 🎯 Computed properties for session type and rewards
+    private var isStandardSession: Bool {
+        selectedMinutes >= standardSessionThreshold
+    }
+    
+    private var totalPossibleDates: Int {
+        selectedMinutes / (dateCollectionInterval / 60) // dates per session
+    }
+    
+    private var timeElapsed: Int {
+        (selectedMinutes * 60) - timeRemaining
+    }
+    
+    private var completionPercentage: Double {
+        guard selectedMinutes > 0 else { return 0 }
+        return Double(timeElapsed) / Double(selectedMinutes * 60)
+    }
+    
+    private var earnedDates: Int {
+        if isStandardSession {
+            // Standard session: proportional to completion
+            return Int(Double(totalPossibleDates) * completionPercentage)
+        } else {
+            // Mini session: all or nothing
+            return sessionCompleted ? totalPossibleDates : 0
+        }
+    }
     
     // 🎯 ADJUSTABLE POSITIONS - CHANGE THESE VALUES
     private let titleTopPadding: CGFloat = 80
@@ -22,7 +53,7 @@ struct FocusSessionView: View {
     private let timerToCharacterSpacing: CGFloat = 100
     private let characterWidth: CGFloat = 100
     private let characterHeight: CGFloat = 130
-    private let characterOffsetX: CGFloat = -83
+    private let characterOffsetX: CGFloat = -90
     private let characterOffsetY: CGFloat = 80
     private let treeWidth: CGFloat = 200
     private let treeHeight: CGFloat = 280
@@ -30,6 +61,12 @@ struct FocusSessionView: View {
     private let buttonBottomPadding: CGFloat = 60
     private let buttonWidth: CGFloat = 280
     private let buttonHeight: CGFloat = 70
+    
+    // 🎯 BUCKET POSITIONING
+    private let bucketWidth: CGFloat = 45
+    private let bucketHeight: CGFloat = 45
+    private let bucketOffsetX: CGFloat = -35 // Position in front of character
+    private let bucketOffsetY: CGFloat = 120 // Position at ground level
     
     // 🎯 ALERT SIZING
     private let alertWidth: CGFloat = 320
@@ -41,6 +78,23 @@ struct FocusSessionView: View {
             return "sitting_girl"
         } else {
             return "sitting_boy"
+        }
+    }
+    
+    // 🎯 Get bucket image based on session progress
+    private var bucketImage: String {
+        if !sessionStarted {
+            return "bucket_empty"
+        }
+        
+        let progress = completionPercentage
+        
+        if progress < 0.5 {
+            return "bucket_empty"
+        } else if progress < 0.75 {
+            return "bucket_half"
+        } else {
+            return "bucket_full"
         }
     }
     
@@ -83,7 +137,15 @@ struct FocusSessionView: View {
                         .frame(width: characterWidth, height: characterHeight)
                         .offset(x: characterOffsetX, y: characterOffsetY)
                     
-                    // Falling date animation (during timer)
+                    // 🎯 Bucket (shows progress) - visible always (during countdown and session)
+                    Image(bucketImage)
+                        .resizable()
+                        .interpolation(.none)
+                        .scaledToFit()
+                        .frame(width: bucketWidth, height: bucketHeight)
+                        .offset(x: bucketOffsetX, y: bucketOffsetY)
+                    
+                    // Falling date animation
                     if showDateFalling {
                         DateFallingToHandView(
                             characterOffsetX: characterOffsetX,
@@ -96,9 +158,12 @@ struct FocusSessionView: View {
                 Spacer().frame(height: characterToTextSpacing)
                 
                 // Motivational text
-                Text(sessionStarted ? "mind your buisness!" : "starting soon...")
+                Text(sessionStarted ? getMotivationalText() : "starting soon...")
                     .font(.custom("PressStart2P-Regular", size: 16))
                     .foregroundColor(.black)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .padding(.horizontal, 20)
                 
                 Spacer()
                 
@@ -125,12 +190,6 @@ struct FocusSessionView: View {
                 Spacer().frame(height: buttonBottomPadding)
             }
             
-            // Falling dates animation overlay (at completion)
-            if showFallingDates {
-                FallingDatesView()
-                    .ignoresSafeArea()
-            }
-            
             // 🎯 CUSTOM STOP ALERT
             if showCancelAlert {
                 Color.black.opacity(0.7)
@@ -146,6 +205,8 @@ struct FocusSessionView: View {
                     onStop: {
                         cancelSession()
                     },
+                    earnedDates: earnedDates,
+                    isStandardSession: isStandardSession,
                     alertWidth: alertWidth,
                     alertHeight: alertHeight
                 )
@@ -161,24 +222,23 @@ struct FocusSessionView: View {
         }
     }
     
-    // MARK: - Initial 5 second countdown
+    // MARK: - Timer Functions
+    
     private func startInitialCountdown() {
-        countdown = 5
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            if countdown > 1 {
+            if countdown > 0 {
                 countdown -= 1
             } else {
                 timer?.invalidate()
-                startFocusSession()
+                startSession()
             }
         }
     }
     
-    // MARK: - Start actual focus session
-    private func startFocusSession() {
+    private func startSession() {
         sessionStarted = true
         timeRemaining = selectedMinutes * 60
-        showDateFalling = true
+        showDateFalling = true // Start the falling date animation
         
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             if timeRemaining > 0 {
@@ -189,34 +249,64 @@ struct FocusSessionView: View {
         }
     }
     
-    // MARK: - Complete session successfully
     private func completeSession() {
         timer?.invalidate()
         sessionCompleted = true
-        showDateFalling = false
         
-        onSessionComplete(selectedMinutes)
+        // Call the completion handler with earned dates
+        onSessionComplete(earnedDates)
         
-        withAnimation {
-            showFallingDates = true
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+        // Small delay before dismissing
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             dismiss()
         }
     }
     
-    // MARK: - Cancel session (no dates)
     private func cancelSession() {
         timer?.invalidate()
+        
+        // Pass earned dates even when stopping early
+        onSessionComplete(earnedDates)
+        
         dismiss()
     }
     
-    // MARK: - Format time as MM:SS
+    // MARK: - Helper Functions
+    
     private func formatTime(_ seconds: Int) -> String {
         let mins = seconds / 60
         let secs = seconds % 60
         return String(format: "%02d:%02d", mins, secs)
+    }
+    
+    private func getMotivationalText() -> String {
+        let progress = Int(completionPercentage * 100)
+        
+        if isStandardSession {
+            // Standard session: show progress-based motivation
+            if progress < 25 {
+                return "stay focused!"
+            } else if progress < 50 {
+                return "you're doing great!"
+            } else if progress < 75 {
+                return "halfway there!"
+            } else {
+                return "almost done!"
+            }
+        } else {
+            // Mini session: emphasize completion requirement
+            if progress < 25 {
+                return "stay focused!"
+            } else if progress < 50 {
+                return "keep going!"
+            } else if progress < 75 {
+                return "halfway there!"
+            } else if progress < 100 {
+                return "finish to earn dates!"
+            } else {
+                return "great job!"
+            }
+        }
     }
 }
 
@@ -224,6 +314,8 @@ struct FocusSessionView: View {
 struct CustomStopAlert: View {
     let onKeepGoing: () -> Void
     let onStop: () -> Void
+    let earnedDates: Int
+    let isStandardSession: Bool
     let alertWidth: CGFloat
     let alertHeight: CGFloat
     
@@ -244,11 +336,38 @@ struct CustomStopAlert: View {
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
                 
-                Text("You won't earn any\ndates if you stop now.")
-                    .font(.custom("PressStart2P-Regular", size: 12))
-                    .foregroundColor(.black.opacity(0.7))
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(6)
+                // Dynamic message based on session type and earned dates
+                if isStandardSession {
+                    // Standard session: show earned dates
+                    if earnedDates > 0 {
+                        VStack(spacing: 8) {
+                            HStack(spacing: 5) {
+                                Image("dates_icon")
+                                    .resizable()
+                                    .interpolation(.none)
+                                    .scaledToFit()
+                                    .frame(width: 20, height: 20)
+                                
+                                Text("You'll earn \(earnedDates) date\(earnedDates == 1 ? "" : "s")")
+                                    .font(.custom("PressStart2P-Regular", size: 11))
+                                    .foregroundColor(Color(hex: "4CAF50"))
+                            }
+                        }
+                    } else {
+                        Text("Keep going to earn\nmore dates!")
+                            .font(.custom("PressStart2P-Regular", size: 12))
+                            .foregroundColor(.black.opacity(0.7))
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(6)
+                    }
+                } else {
+                    // Mini session: all or nothing
+                    Text("You won't earn any\ndates if you stop now.")
+                        .font(.custom("PressStart2P-Regular", size: 12))
+                        .foregroundColor(.black.opacity(0.7))
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(6)
+                }
                 
                 HStack(spacing: 15) {
                     Button(action: onKeepGoing) {
@@ -296,9 +415,9 @@ struct DateFallingToHandView: View {
     
     // 🎯 ADJUSTABLE DATE FALLING POSITIONS - CHANGE THESE VALUES
     private let dateStartY: CGFloat = 170         // Where date starts (top of screen)
-    private let dateEndY: CGFloat = 300          // Where date ends (character's hand)
-    private let dateOffsetX: CGFloat = 55          // Horizontal offset from character center
-    private let dateSize: CGFloat = 30              // Size of falling date image
+    private let dateEndY: CGFloat = 280          // Where date ends (character's hand)
+    private let dateOffsetX: CGFloat = 60// Horizontal offset from character center
+    private let dateSize: CGFloat = 27             // Size of falling date image
     private let fallDuration: Double = 1.5          // How long it takes to fall (seconds)
     private let repeatInterval: Double = 2.0        // How often date falls (seconds)
     
@@ -341,57 +460,4 @@ struct DateFallingToHandView: View {
         
         animationTimer?.fire()
     }
-}
-
-// MARK: - Falling Dates Animation (At Completion)
-struct FallingDatesView: View {
-    @State private var dates: [FallingDate] = []
-    
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                ForEach(dates) { date in
-                    Image("dates_icon")
-                        .resizable()
-                        .interpolation(.none)
-                        .scaledToFit()
-                        .frame(width: 30, height: 30)
-                        .position(x: date.x, y: date.y)
-                        .opacity(date.opacity)
-                }
-            }
-            .onAppear {
-                startFallingDates(screenHeight: geometry.size.height, screenWidth: geometry.size.width)
-            }
-        }
-    }
-    
-    private func startFallingDates(screenHeight: CGFloat, screenWidth: CGFloat) {
-        for i in 0..<20 {
-            let delay = Double(i) * 0.1
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                let newDate = FallingDate(
-                    x: CGFloat.random(in: 50...(screenWidth - 50)),
-                    y: -50,
-                    opacity: 1.0
-                )
-                dates.append(newDate)
-                
-                withAnimation(.easeIn(duration: 2.0)) {
-                    if let index = dates.firstIndex(where: { $0.id == newDate.id }) {
-                        dates[index].y = screenHeight + 50
-                        dates[index].opacity = 0.0
-                    }
-                }
-            }
-        }
-    }
-}
-
-struct FallingDate: Identifiable {
-    let id = UUID()
-    var x: CGFloat
-    var y: CGFloat
-    var opacity: Double
 }
