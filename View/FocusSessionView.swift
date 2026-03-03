@@ -1,4 +1,12 @@
+//
+//  FocusSessionView.swift
+//  Shiddaha
+//
+//  📁 Location: View folder
+//  🎯 Target Membership: Shiddaha (app target only)
+
 import SwiftUI
+import ActivityKit
 
 struct FocusSessionView: View {
     @Environment(\.dismiss) private var dismiss
@@ -216,9 +224,17 @@ struct FocusSessionView: View {
         .navigationBarBackButtonHidden(true)
         .onAppear {
             startInitialCountdown()
+            
+            // Request notification permission
+            FocusSessionActivityManager.shared.requestNotificationPermission()
         }
         .onDisappear {
             timer?.invalidate()
+            
+            // End Live Activity if view disappears
+            if FocusSessionActivityManager.shared.isActivityRunning {
+                FocusSessionActivityManager.shared.endActivity(showCompletionMessage: false)
+            }
         }
     }
     
@@ -240,9 +256,19 @@ struct FocusSessionView: View {
         timeRemaining = selectedMinutes * 60
         showDateFalling = true // Start the falling date animation
         
+        // Start Live Activity
+        FocusSessionActivityManager.shared.startActivity(
+            totalMinutes: selectedMinutes,
+            isStandardSession: isStandardSession,
+            characterImageName: vm.selectedCharacter?.imageName ?? "char_boy"
+        )
+        
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             if timeRemaining > 0 {
                 timeRemaining -= 1
+                
+                // Update Live Activity every second
+                FocusSessionActivityManager.shared.updateActivity(timeRemaining: timeRemaining)
             } else {
                 completeSession()
             }
@@ -252,6 +278,15 @@ struct FocusSessionView: View {
     private func completeSession() {
         timer?.invalidate()
         sessionCompleted = true
+        
+        // End Live Activity with completion
+        FocusSessionActivityManager.shared.endActivity(showCompletionMessage: true)
+        
+        // Send completion notification
+        FocusSessionActivityManager.shared.sendCompletionNotification(
+            earnedDates: earnedDates,
+            sessionMinutes: selectedMinutes
+        )
         
         // Call the completion handler with earned dates
         onSessionComplete(earnedDates)
@@ -264,6 +299,9 @@ struct FocusSessionView: View {
     
     private func cancelSession() {
         timer?.invalidate()
+        
+        // End Live Activity when cancelled
+        FocusSessionActivityManager.shared.endActivity(showCompletionMessage: false)
         
         // Pass earned dates even when stopping early
         onSessionComplete(earnedDates)

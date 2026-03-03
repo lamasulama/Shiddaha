@@ -8,11 +8,41 @@
 
 /* Begin PBXBuildFile section */
 		E13260242F33FB73009F83B6 /* PressStart2P-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E13260232F33FB73009F83B6 /* PressStart2P-Regular.ttf */; };
+		E16E1DB12F56D74500D303B8 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E16E1DB02F56D74500D303B8 /* WidgetKit.framework */; };
+		E1B859932F5657510007E214 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1B859922F5657510007E214 /* SwiftUI.framework */; };
+		E1B859A42F5657510007E214 /* FocusSessionWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E1B8598E2F5657510007E214 /* FocusSessionWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E1B859A22F5657510007E214 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E134609C2F336E0100206732 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E1B8598D2F5657510007E214;
+			remoteInfo = FocusSessionWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		E1B859A92F5657510007E214 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				E1B859A42F5657510007E214 /* FocusSessionWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		E13260232F33FB73009F83B6 /* PressStart2P-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PressStart2P-Regular.ttf"; sourceTree = "<group>"; };
 		E13460A42F336E0100206732 /* Shiddaha.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Shiddaha.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E16E1DB02F56D74500D303B8 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		E1B8598E2F5657510007E214 /* FocusSessionWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FocusSessionWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E1B859922F5657510007E214 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -22,6 +52,27 @@
 				Info.plist,
 			);
 			target = E13460A32F336E0100206732 /* Shiddaha */;
+		};
+		E1B859A82F5657510007E214 /* Exceptions for "FocusSessionWidget" folder in "FocusSessionWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E1B8598D2F5657510007E214 /* FocusSessionWidgetExtension */;
+		};
+		E1B859B12F565C0E0007E214 /* Exceptions for "Model" folder in "FocusSessionWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				FocusSessionAttributes.swift,
+			);
+			target = E1B8598D2F5657510007E214 /* FocusSessionWidgetExtension */;
+		};
+		E1B859B42F5685EC0007E214 /* Exceptions for "Shiddaha" folder in "FocusSessionWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Assets.xcassets,
+			);
+			target = E1B8598D2F5657510007E214 /* FocusSessionWidgetExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -38,6 +89,9 @@
 		};
 		E13460EE2F33730600206732 /* Model */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E1B859B12F565C0E0007E214 /* Exceptions for "Model" folder in "FocusSessionWidgetExtension" target */,
+			);
 			path = Model;
 			sourceTree = "<group>";
 		};
@@ -45,8 +99,17 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				E13260262F33FBC4009F83B6 /* Exceptions for "Shiddaha" folder in "Shiddaha" target */,
+				E1B859B42F5685EC0007E214 /* Exceptions for "Shiddaha" folder in "FocusSessionWidgetExtension" target */,
 			);
 			path = Shiddaha;
+			sourceTree = "<group>";
+		};
+		E1B859942F5657510007E214 /* FocusSessionWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E1B859A82F5657510007E214 /* Exceptions for "FocusSessionWidget" folder in "FocusSessionWidgetExtension" target */,
+			);
+			path = FocusSessionWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -56,6 +119,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E1B8598B2F5657510007E214 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E1B859932F5657510007E214 /* SwiftUI.framework in Frameworks */,
+				E16E1DB12F56D74500D303B8 /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +150,8 @@
 				E13460EE2F33730600206732 /* Model */,
 				E13460ED2F3372F400206732 /* ViewModel */,
 				E13460EC2F3372E300206732 /* View */,
+				E1B859942F5657510007E214 /* FocusSessionWidget */,
+				E1B8598F2F5657510007E214 /* Frameworks */,
 				E13460A52F336E0100206732 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -86,8 +160,18 @@
 			isa = PBXGroup;
 			children = (
 				E13460A42F336E0100206732 /* Shiddaha.app */,
+				E1B8598E2F5657510007E214 /* FocusSessionWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E1B8598F2F5657510007E214 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E16E1DB02F56D74500D303B8 /* WidgetKit.framework */,
+				E1B859922F5657510007E214 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -100,10 +184,12 @@
 				E13460A02F336E0100206732 /* Sources */,
 				E13460A12F336E0100206732 /* Frameworks */,
 				E13460A22F336E0100206732 /* Resources */,
+				E1B859A92F5657510007E214 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				E1B859A32F5657510007E214 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				E13460EC2F3372E300206732 /* View */,
@@ -118,6 +204,28 @@
 			productReference = E13460A42F336E0100206732 /* Shiddaha.app */;
 			productType = "com.apple.product-type.application";
 		};
+		E1B8598D2F5657510007E214 /* FocusSessionWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E1B859A52F5657510007E214 /* Build configuration list for PBXNativeTarget "FocusSessionWidgetExtension" */;
+			buildPhases = (
+				E1B8598A2F5657510007E214 /* Sources */,
+				E1B8598B2F5657510007E214 /* Frameworks */,
+				E1B8598C2F5657510007E214 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E1B859942F5657510007E214 /* FocusSessionWidget */,
+			);
+			name = FocusSessionWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = FocusSessionWidgetExtension;
+			productReference = E1B8598E2F5657510007E214 /* FocusSessionWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -129,6 +237,9 @@
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					E13460A32F336E0100206732 = {
+						CreatedOnToolsVersion = 26.0.1;
+					};
+					E1B8598D2F5657510007E214 = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
 				};
@@ -148,6 +259,7 @@
 			projectRoot = "";
 			targets = (
 				E13460A32F336E0100206732 /* Shiddaha */,
+				E1B8598D2F5657510007E214 /* FocusSessionWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -161,6 +273,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E1B8598C2F5657510007E214 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -171,7 +290,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E1B8598A2F5657510007E214 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E1B859A32F5657510007E214 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E1B8598D2F5657510007E214 /* FocusSessionWidgetExtension */;
+			targetProxy = E1B859A22F5657510007E214 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		E13460AD2F336E0200206732 /* Debug */ = {
@@ -306,6 +440,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Shiddaha/Info.plist;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -339,6 +474,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Shiddaha/Info.plist;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -354,6 +490,68 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		E1B859A62F5657510007E214 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3VX273383W;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FocusSessionWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FocusSessionWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "team5.-Shiddaha.Shiddaha.FocusSessionWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E1B859A72F5657510007E214 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3VX273383W;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FocusSessionWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FocusSessionWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "team5.-Shiddaha.Shiddaha.FocusSessionWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -378,6 +576,15 @@
 			buildConfigurations = (
 				E13460B02F336E0200206732 /* Debug */,
 				E13460B12F336E0200206732 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E1B859A52F5657510007E214 /* Build configuration list for PBXNativeTarget "FocusSessionWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E1B859A62F5657510007E214 /* Debug */,
+				E1B859A72F5657510007E214 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

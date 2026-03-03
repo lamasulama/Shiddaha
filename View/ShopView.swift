@@ -47,20 +47,20 @@ struct ShopView: View {
     private let items: [StoreItem] = [
             // TENTS
             StoreItem(imageName: "tent", price: 0, category: .tents),
-            StoreItem(imageName: "tent4", price: 200, category: .tents),
-            StoreItem(imageName: "tent3", price: 300, category: .tents),
-            StoreItem(imageName: "tent2", price: 600, category: .tents),
-            StoreItem(imageName: "tent5", price: 1000, category: .tents),
-            StoreItem(imageName: "tent6", price: 1200, category: .tents),
+            StoreItem(imageName: "tent4", price: 60, category: .tents),
+            StoreItem(imageName: "tent3", price: 120, category: .tents),
+            StoreItem(imageName: "tent2", price: 200, category: .tents),
+            StoreItem(imageName: "tent5", price: 300, category: .tents),
+            StoreItem(imageName: "tent6", price: 500, category: .tents),
             
             // CHARACTERS
             StoreItem(imageName: "char_boy", price: 0, category: .characters),
             StoreItem(imageName: "char_girl", price: 0, category: .characters),
-            StoreItem(imageName: "girl1", price: 600, category: .characters),
-            StoreItem(imageName: "girl2", price: 600, category: .characters),
-            StoreItem(imageName: "girl3", price: 1200, category: .characters),
+            StoreItem(imageName: "girl1", price: 120, category: .characters),
+            StoreItem(imageName: "girl2", price: 120, category: .characters),
+            StoreItem(imageName: "girl3", price: 300, category: .characters),
 
-            StoreItem(imageName: "boy1", price: 1200, category: .characters),
+            StoreItem(imageName: "boy1", price: 300, category: .characters),
          
         ]
 
