@@ -58,9 +58,9 @@ struct ShopView: View {
             StoreItem(imageName: "char_girl", price: 0, category: .characters),
             StoreItem(imageName: "girl1", price: 120, category: .characters),
             StoreItem(imageName: "girl2", price: 120, category: .characters),
-            StoreItem(imageName: "girl3", price: 300, category: .characters),
-
             StoreItem(imageName: "boy1", price: 300, category: .characters),
+
+            StoreItem(imageName: "girl3", price: 300, category: .characters),
          
         ]
 

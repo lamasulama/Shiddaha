@@ -10,6 +10,7 @@ import ActivityKit
 
 struct FocusSessionView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
     @ObservedObject var vm: OnboardingViewModel
     
     let selectedMinutes: Int
@@ -18,6 +19,7 @@ struct FocusSessionView: View {
     @State private var countdown: Int = 5
     @State private var sessionStarted = false
     @State private var timeRemaining: Int = 0
+    @State private var sessionEndTime: Date? // Store when session should end
     @State private var timer: Timer?
     @State private var showCancelAlert = false
     @State private var sessionCompleted = false
@@ -82,10 +84,26 @@ struct FocusSessionView: View {
     
     // 🎯 Get sitting character based on selected character
     private var sittingCharacterImage: String {
-        if vm.selectedCharacter?.imageName == "char_girl" {
-            return "sitting_girl"
-        } else {
+        guard let characterImage = vm.selectedCharacter?.imageName else {
             return "sitting_boy"
+        }
+        
+        // Map standing characters to sitting versions
+        switch characterImage {
+        case "char_girl":
+            return "sitting_girl"
+        case "char_boy":
+            return "sitting_boy"
+        case "girl1":
+            return "sitting_girl1"
+        case "girl2":
+            return "sitting_girl2"
+        case "girl3":
+            return "sitting_girl3"
+        case "boy1":
+            return "sitting_boy1"
+        default:
+            return "sitting_boy" // fallback
         }
     }
     
@@ -228,6 +246,12 @@ struct FocusSessionView: View {
             // Request notification permission
             FocusSessionActivityManager.shared.requestNotificationPermission()
         }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if newPhase == .active && sessionStarted {
+                // App came back to foreground - recalculate time
+                updateTimeFromEndTime()
+            }
+        }
         .onDisappear {
             timer?.invalidate()
             
@@ -256,6 +280,9 @@ struct FocusSessionView: View {
         timeRemaining = selectedMinutes * 60
         showDateFalling = true // Start the falling date animation
         
+        // Store the end time
+        sessionEndTime = Date().addingTimeInterval(TimeInterval(timeRemaining))
+        
         // Start Live Activity
         FocusSessionActivityManager.shared.startActivity(
             totalMinutes: selectedMinutes,
@@ -264,14 +291,28 @@ struct FocusSessionView: View {
         )
         
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            if timeRemaining > 0 {
-                timeRemaining -= 1
-                
-                // Update Live Activity every second
-                FocusSessionActivityManager.shared.updateActivity(timeRemaining: timeRemaining)
-            } else {
-                completeSession()
-            }
+            updateTimeFromEndTime()
+        }
+        
+        // Keep timer running in background
+        RunLoop.current.add(timer!, forMode: .common)
+    }
+    
+    // Calculate time remaining based on end time (works even when app is backgrounded)
+    private func updateTimeFromEndTime() {
+        guard let endTime = sessionEndTime else { return }
+        
+        let now = Date()
+        let remaining = Int(endTime.timeIntervalSince(now))
+        
+        if remaining > 0 {
+            timeRemaining = remaining
+            
+            // Update Live Activity
+            FocusSessionActivityManager.shared.updateActivity(timeRemaining: timeRemaining)
+        } else {
+            timeRemaining = 0
+            completeSession()
         }
     }
     

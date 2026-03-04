@@ -33,7 +33,8 @@ class FocusSessionActivityManager {
             timeRemaining: totalMinutes * 60,
             totalMinutes: totalMinutes,
             isStandardSession: isStandardSession,
-            characterImageName: characterImageName
+            characterImageName: characterImageName,
+            sessionStartTime: Date()
         )
         
         do {
@@ -59,7 +60,8 @@ class FocusSessionActivityManager {
                 timeRemaining: timeRemaining,
                 totalMinutes: activity.content.state.totalMinutes,
                 isStandardSession: activity.content.state.isStandardSession,
-                characterImageName: activity.content.state.characterImageName
+                characterImageName: activity.content.state.characterImageName,
+                sessionStartTime: activity.content.state.sessionStartTime
             )
             
             await activity.update(
@@ -82,7 +84,8 @@ class FocusSessionActivityManager {
                     timeRemaining: 0,
                     totalMinutes: activity.content.state.totalMinutes,
                     isStandardSession: activity.content.state.isStandardSession,
-                    characterImageName: activity.content.state.characterImageName
+                    characterImageName: activity.content.state.characterImageName,
+                    sessionStartTime: activity.content.state.sessionStartTime
                 )
                 
                 await activity.update(

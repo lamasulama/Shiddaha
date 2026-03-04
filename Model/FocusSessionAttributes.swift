@@ -17,6 +17,7 @@ struct FocusSessionAttributes: ActivityAttributes {
         var totalMinutes: Int
         var isStandardSession: Bool
         var characterImageName: String
+        var sessionStartTime: Date // When the session started
     }
     
     // Fixed attributes (don't change during the activity)
